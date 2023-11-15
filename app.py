@@ -232,6 +232,12 @@ for i in range(4):
     question.addButton(const.ANSWER_BTN_STARTX,const.ANSWER_BTN_STARTY+(i*const.ANSWER_BTN_GAP),
                        const.ANSWER_BTN_WIDTH, const.ANSWER_BTN_HEIGHT,question_btn_img[i],i, partial(checkAnswer, i))
 
+def EventHandler():
+    global current_state
+    return {
+        State.START: 1,
+        'b': 2,
+    }[x]
 
 # main loop
 run = True
@@ -242,25 +248,23 @@ while run:
             quit()
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse = pygame.mouse.get_pos()
-            match current_state:
-                case State.START:
-                    start.checkEvent(mouse[0], mouse[1])
-                case State.QUESTION:
-                    question.checkEvent(mouse[0], mouse[1])
-                case State.AFTER_QUESTION:
-                    after_question.checkEvent(mouse[0], mouse[1])
-                case State.INFO_PAGE:
-                    info_page.checkEvent(mouse[0], mouse[1])
+            if current_state.value == State.START.value:
+                start.checkEvent(mouse[0], mouse[1])
+            elif current_state.value == State.QUESTION.value:
+                question.checkEvent(mouse[0], mouse[1])
+            elif current_state.value == State.AFTER_QUESTION.value:
+                after_question.checkEvent(mouse[0], mouse[1])
+            elif current_state.value == State.INFO_PAGE.value:
+                info_page.checkEvent(mouse[0], mouse[1])
 
-        match current_state:
-            case State.START:
-                start.draw()
-            case State.QUESTION:
-                question.draw()
-            case State.AFTER_QUESTION:
-                after_question.draw()
-            case State.INFO_PAGE:
-                info_page.draw()
+        if current_state.value == State.START.value:
+            start.draw()
+        elif current_state.value == State.QUESTION.value:
+            question.draw()
+        elif current_state.value == State.AFTER_QUESTION.value:
+            after_question.draw()
+        elif current_state.value == State.INFO_PAGE.value:
+            info_page.draw()
             
 
             # Remember to update your clock and display at the end
