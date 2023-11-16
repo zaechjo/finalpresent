@@ -5,4 +5,5 @@ class State(Enum):
     QUESTION = 2
     AFTER_QUESTION = 3
     INFO_PAGE = 4
-    OUTPUT = 5
+    END = 5
+    OUTPUT = 6

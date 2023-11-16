@@ -34,6 +34,7 @@ window = pygame.display.set_mode(fullscreen, pygame.NOFRAME)
 #     for i in range(steps):
 #         kit.stepper1.onestep()
 #         time.sleep(0.02)
+#     kit.stepper1.release()
 
 # def homeCube():
 #     while True:
@@ -42,7 +43,10 @@ window = pygame.display.set_mode(fullscreen, pygame.NOFRAME)
 #             kit.stepper1.release()
 #             break
 #         kit.stepper1.onestep()
-#         time.sleep(0.05)
+#         time.sleep(0.02)
+#     kit.stepper1.release()
+
+# 1=laser, 2=stanze, 3=biegen, 4=am
 
 sequences = json.load(open("sequences.json", encoding='utf-8'))
 
@@ -50,20 +54,26 @@ sequence = sequences["sequences"][0]["grad"]
 seq = sequences["sequences"][0]["bereich"]
 antworten = sequences["sequences"][0]["antworten"]
 antwort_text = sequences["antwort_text"]
+antwort_index = sequences["sequences"][0]["antwort_index"]
 
 # assets and bg
 start_bg = pygame.image.load("assets/START.png")
 question_bg = pygame.image.load("assets/FRAGE.png")
 winning_bg = pygame.image.load("assets/GEWONNEN.png")
+end_bg = pygame.image.load("assets/END.png");
 
 # info bilder
 
 
 ## Button assets
 start_btn_img = pygame.image.load("assets/start_btn/0.png")
+end_btn_img = pygame.image.load("assets/end_btn/0.png")
+
 question_btn_img = []
 solution_btn_img = []
 info_img = []
+user_score = 0
+
 for i in range(4):
     tmp = pygame.image.load("assets/question_btns/"+str(i)+".png")
     tmp_info = pygame.image.load("assets/info_bg/"+str(i)+".png")
@@ -87,31 +97,38 @@ def resetAll():
     global current_index
     current_state = State.START
     current_index = 0
-    print("reset")
     # homeCube()
 
 ## GUI Klassen
 
 class Text(object):
-    def __init__(self, text, fontsize, x, y, color):
+    def __init__(self, text, fontsize, x, y, color ,h_center=None,center=None):
         self.font = pygame.font.Font("assets/font/Roboto.ttf", fontsize)
         self.text = text
         self.color = color
         self.x = x
+        self.h_center = h_center
+        self.center = center
         self.y = y
 
     def draw(self, surf):
         text = self.font.render(self.text, True, self.color)
-        surf.blit(text, (self.x, self.y))
+        if self.h_center != None: 
+           rect = text.get_rect(center = (const.SCREEN_WIDTH // 2, 100))
+           surf.blit(text, rect)
+        elif self.center != None: 
+            rect = text.get_rect(center = (const.SCREEN_WIDTH // 2, const.SCREEN_HEIGHT // 2))
+            surf.blit(text, rect)
+        else:
+            surf.blit(text, (self.x, self.y))
     
     def setText(self, text):
         self.text = text
     
     def appendText(self,text):
         self.text += text
+
     
-    def centerVertical(self):
-        print("A")
 
 class Button(object):
     def __init__(self, x,y, width, height,img, btn_id=None, action=None):
@@ -148,8 +165,8 @@ class Screen(object):
         self.btns = []
         self.text = []
 
-    def addText(self, text, x, y, fontsize, color):
-        text = Text(text, fontsize, x,y, color)
+    def addText(self, text, x, y, fontsize, color, h_center=None, center=None):
+        text = Text(text, fontsize, x,y, color, h_center, center)
         self.text.append(text)
     
     def changeText(self, index, text):
@@ -192,11 +209,15 @@ def switchInfoScreen():
     global current_index
     current_index += 1
     if current_index == 4:
-        resetAll()
+       switch(State.END)
     else:
         current_state = State.QUESTION
-    
 
+def getPrize():
+    print("Get prize")
+    # gebe Fahrrad aus mit drive(deg)
+    time.sleep(10) # delay after click the btn
+    resetAll()
 
 
 # start screen
@@ -207,7 +228,7 @@ start.addButton(262, 200, 500, 200,start_btn_img, None, partial(switch, State.QU
 after_question = Screen(1024, 600, pygame.Surface(fullscreen), winning_bg)
 after_question.addButton(312, 194, 400, 80,solution_btn_img[0], None, partial(switch, State.INFO_PAGE))
 after_question.addButton(312, 327, 400, 80,solution_btn_img[1], None, resetAll)
-after_question.addText("", 10, 10, 32, pygame.Color(255,255,255))
+after_question.addText("", 0, 0, 32, pygame.Color(255,255,255), True)
 
 # info seite 
 info_page = Screen(1024, 600, pygame.Surface(fullscreen), info_img[0])
@@ -216,13 +237,17 @@ info_page.addButton(606, 496, 400, 80,solution_btn_img[0], None, switchInfoScree
 def checkAnswer(btn_id):
     global current_index
     global antworten
+    global user_score
     global antwort_text
     # check answer
     if btn_id == antworten[current_index]:
-        after_question.changeText(0,"Richtig, " + antwort_text[current_index])
+        after_question.changeText(0,"Richtig, " + antwort_text[antwort_index[current_index]])
+        user_score += 1
     else: 
-        after_question.changeText(0,"Falsch, "+ antwort_text[current_index])
-    info_page.changeImage(info_img[current_index])
+        after_question.changeText(0,"Falsch, "+ antwort_text[antwort_index[current_index]])
+    
+    info_page.changeImage(info_img[antwort_index[current_index]])
+    end_page.changeText(0, str(user_score)+"/4")
     switch(State.AFTER_QUESTION)
     # drive(sequence[current_index])
     # rotiere zur nächsten Station
@@ -232,12 +257,9 @@ for i in range(4):
     question.addButton(const.ANSWER_BTN_STARTX,const.ANSWER_BTN_STARTY+(i*const.ANSWER_BTN_GAP),
                        const.ANSWER_BTN_WIDTH, const.ANSWER_BTN_HEIGHT,question_btn_img[i],i, partial(checkAnswer, i))
 
-def EventHandler():
-    global current_state
-    return {
-        State.START: 1,
-        'b': 2,
-    }[x]
+end_page = Screen(1024, 600, pygame.Surface(fullscreen), end_bg)
+end_page.addButton(312, 440, 400, 80, end_btn_img, None, getPrize)
+end_page.addText("", 0,0, 48, pygame.Color(255,255,255), None, True)
 
 # main loop
 run = True
@@ -256,6 +278,8 @@ while run:
                 after_question.checkEvent(mouse[0], mouse[1])
             elif current_state.value == State.INFO_PAGE.value:
                 info_page.checkEvent(mouse[0], mouse[1])
+            elif current_state.value == State.END.value:
+                end_page.checkEvent(mouse[0], mouse[1])
 
         if current_state.value == State.START.value:
             start.draw()
@@ -265,6 +289,8 @@ while run:
             after_question.draw()
         elif current_state.value == State.INFO_PAGE.value:
             info_page.draw()
+        elif current_state.value == State.END.value:
+            end_page.draw()
             
 
             # Remember to update your clock and display at the end

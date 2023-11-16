@@ -1,0 +1,4 @@
+Bereich 1: 2D-Laser
+Bereich 2: Stanzmaschine
+Bereich 3: Additive Manufacturing
+Bereich 4: Biegemaschine
