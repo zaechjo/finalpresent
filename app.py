@@ -5,46 +5,45 @@ import constant as const
 from state import State
 from functools import partial
 import json
-#import board
-# import Adafruit_ADS1x15
-# import RPi.GPIO as GPIO
-# from adafruit_motor import stepper
-# from adafruit_motorkit import MotorKit
+import board
+import Adafruit_ADS1x15
+import RPi.GPIO as GPIO
+from adafruit_motor import stepper
+from adafruit_motorkit import MotorKit
 
 
 pygame.init()
 fullscreen = (const.SCREEN_WIDTH,const.SCREEN_HEIGHT)
 window = pygame.display.set_mode(fullscreen, pygame.NOFRAME)
 
-# electronics
-# adc = Adafruit_ADS1x15.ADS1115()
-# kit = MotorKit(i2c=board.I2C())
-# kit.stepper1.release()
-# kit.stepper2.release()
+adc = Adafruit_ADS1x15.ADS1115()
+kit = MotorKit(i2c=board.I2C())
+kit.stepper1.release()
+kit.stepper2.release()
 
-# GPIO.setmode(GPIO.BCM)
-# GPIO.setwarnings(False)
-# GAIN = 1
-# Digital_PIN = 23
-# Time_Delay = 0.05
-# GPIO.setup(Digital_PIN, GPIO.IN, pull_up_down=GPIO.PUD_OFF)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GAIN = 1
+Digital_PIN = 23
+Time_Delay = 0.05
+GPIO.setup(Digital_PIN, GPIO.IN, pull_up_down=GPIO.PUD_OFF)
 
-# def drive(deg):
-#     steps = round(deg/1.8)
-#     for i in range(steps):
-#         kit.stepper1.onestep()
-#         time.sleep(0.02)
-#     kit.stepper1.release()
+def drive(deg):
+    steps = round(deg/1.8)
+    for i in range(steps):
+        kit.stepper1.onestep()
+        time.sleep(0.02)
+    kit.stepper1.release()
 
-# def homeCube():
-#     while True:
-#         value = adc.read_adc(0, gain=GAIN)
-#         if value <= 1000:
-#             kit.stepper1.release()
-#             break
-#         kit.stepper1.onestep()
-#         time.sleep(0.02)
-#     kit.stepper1.release()
+def homeCube():
+    while True:
+        value = adc.read_adc(0, gain=GAIN)
+        if value <= 1000:
+            kit.stepper1.release()
+            break
+        kit.stepper1.onestep()
+        time.sleep(0.02)
+    kit.stepper1.release()
 
 # 1=laser, 2=stanze, 3=biegen, 4=am
 
@@ -97,7 +96,7 @@ def resetAll():
     global current_index
     current_state = State.START
     current_index = 0
-    # homeCube()
+    homeCube()
 
 ## GUI Klassen
 
@@ -212,6 +211,7 @@ def switchInfoScreen():
        switch(State.END)
     else:
         current_state = State.QUESTION
+        drive(sequence[current_index])
 
 def getPrize():
     print("Get prize")
