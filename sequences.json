@@ -4,8 +4,8 @@
             "id": 0,
             "grad": [180,270,180,90],
             "bereich": [3,2,4,1],
-            "antworten": [2, 1, 3, 0],
-            "antwort_index": [2,1,3,0]
+            "antwort_index": [2,1,3,0],
+            "antwort_moeglich_index" : [3, 2, 1, 0]
         }
     ],
     "antwort_text":[
@@ -13,5 +13,15 @@
         "das Teil wurde gestanzt", 
         "das Teil wurde 3D gedruckt",
         "das Teil wurde gebogen"
+    ],
+    "antwort_moeglich":[
+        "Mithilfe eines 2D-Lasers",
+        "Mit einer Biegemaschine",
+        "Mittels einer Stanzmaschine",
+        "Mit dem 3D-Drucker",
+        "Mit einer Drehmaschine",
+        "Wurde geschweißt",
+        "Wurde gegossen",
+        "Mit einer Fräsmaschine"
     ]
 }
